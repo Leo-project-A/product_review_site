@@ -3,7 +3,7 @@
 include "../config.php"; // for pdo
 include "functions.php"; // for tokens and validation
 
-header("Content-Type: text/plain"); // tell jQuery it's plain text, no special code or JSON
+header("Content-Type: text/plain"); // tell jquery it's plain text, no special code or JSON
 http_response_code(200); // force success status so it wont crash the code
 
 if ($_SERVER['REQUEST_METHOD'] === "POST") {
@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
         echo "your review was accepted. it is now pending approval.<br> thank you :)";
         exit;
 
-    } else { //something happened while inserting data
+    } else { 
         echo "something happened while trying to send the review";
     }
 

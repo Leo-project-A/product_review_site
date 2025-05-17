@@ -18,7 +18,7 @@ $waiting_reviews = $stmt->fetchAll();
 
     <div class="review-container">
 
-        <!-- AJAX response -->
+        <!-- AJAX response sent from admin_actions.php -->
         <div id="response-message"></div>
 
         <?php if (count($waiting_reviews) < 1): ?>

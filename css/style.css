@@ -1,4 +1,3 @@
-/* === Reset & Base Styles === */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -13,7 +12,6 @@ body {
     line-height: 1.6;
 }
 
-/* === Layout === */
 .page-container {
     max-width: 800px;
     margin: 0 auto;
@@ -23,7 +21,6 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* === Typography === */
 .title {
     font-size: 2em;
     margin-bottom: 10px;
@@ -35,7 +32,6 @@ body {
     margin-bottom: 25px;
 }
 
-/* === Forms === */
 .form {
     margin-bottom: 30px;
 }
@@ -105,7 +101,6 @@ textarea {
     margin: 0;
 }
 
-/* === Review Boxes === */
 .review-container {
     margin-top: 40px;
 }
@@ -134,10 +129,6 @@ textarea {
     margin-top: 10px;
 }
 
-
-
-
-/* === Utilities === */
 .text-center {
     text-align: center;
 }
