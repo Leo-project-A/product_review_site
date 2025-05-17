@@ -21,25 +21,25 @@ Users can submit reviews, and an admin can approve or decline them from a protec
 
 ## Project Structure
 
-/Product_review_site/
-│
-├── index.php # Main product page
-├── admin.php # Admin dashboard (protected)
-├── admin_login.php # Admin login form
-├── logout.php # Secure session logout
-│
-├── functions.php # Reusable helpers (CSRF, login check)
+Product_review_site/
+├── index.php               # Main product page
+├── admin.php               # Admin dashboard (protected)
+├── admin_login.php         # Admin login form
+├── logout.php              # Secure session logout
+├── functions.php           # Reusable helpers (CSRF, login check)
 │
 ├── utils/
-│ ├── submit_review.php # Handles AJAX review submissions
-│ ├── admin_actions.php # Handles AJAX approve/decline
-│ └── config.php # DB connection (PDO) + session start
+│   ├── submit_review.php   # Handles AJAX review submissions
+│   ├── admin_actions.php   # Handles AJAX approve/decline
+│   └── config.php          # DB connection (PDO) + session start
 │
 ├── partials/
-│ ├── header.php # Common HTML header
-│ └── footer.php # Common HTML footer
+│   ├── header.php          # Common HTML header
+│   └── footer.php          # Common HTML footer
 │
 ├── css/
-│ └── style.css # generic styling for UI
+│   └── style.css           # Generic styling for UI
 │
 ├── README.md
+└── NOTES.md
+
