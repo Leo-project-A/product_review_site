@@ -27,7 +27,7 @@ class Database {
     }
 }
 
-/*** Create New Connection to DB and start session for the App ***/
+/*** Create new connection to DB and start session for the app ***/
 $pdo = Database::connect();
 
 if(session_status() === PHP_SESSION_NONE){

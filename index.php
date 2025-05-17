@@ -24,11 +24,10 @@ $reviews = $stmt->fetchAll();
     </div><br><br>
     <!-------------------------------------------------------------------->
 
-    <!-- this is the new review form -->
     <div class="form">
         <h2 class="subtitle">Submit a Review</h2>
 
-        <!-- AJAX response -->
+        <!-- AJAX response sent from submit_form.php -->
         <div id="response-message"></div>
 
         <form id="review-form" method="POST" action="" class="form">
@@ -55,7 +54,7 @@ $reviews = $stmt->fetchAll();
 
         
     </div>
-    <!------------------------------------>
+    <!-------------------------------------------------------------------->
 
     <h2 class="subtitle">All User Reviews</h2>
     <div class="review-container">
@@ -86,7 +85,7 @@ include "partials/footer.php";
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         $('#review-form').on('submit', function (e) {
-            e.preventDefault(); // STOP form from reloading the page
+            e.preventDefault();
 
             const formData = $(this).serialize();
 
