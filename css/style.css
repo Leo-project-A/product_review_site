@@ -1,0 +1,155 @@
+/* === Reset & Base Styles === */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+    padding: 20px;
+    line-height: 1.6;
+}
+
+/* === Layout === */
+.page-container {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* === Typography === */
+.title {
+    font-size: 2em;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    font-size: 1.2em;
+    color: #555;
+    margin-bottom: 25px;
+}
+
+/* === Forms === */
+.form {
+    margin-bottom: 30px;
+}
+
+.form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form input[type="text"],
+.form input[type="password"],
+.form input[type="number"],
+.form select,
+.form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1em;
+}
+
+textarea {
+    resize: none;
+}
+
+.form input[type="submit"] {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.form input[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+.form input.approve {
+    background-color: blue;
+}
+
+.form input.approve:hover {
+    background-color: #0056b3;
+}
+
+.form input.decline {
+    background-color: red;
+}
+
+.form input.decline:hover {
+    background-color: rgb(210, 16, 16);
+}
+
+.button-row {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.button-row form {
+    margin: 0;
+}
+
+/* === Review Boxes === */
+.review-container {
+    margin-top: 40px;
+}
+
+.review {
+    background-color: #f1f1f1;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 6px;
+}
+
+.review .user-name {
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-bottom: 5px;
+}
+
+.review .review-rating {
+    color: #ff9800;
+    font-weight: bold;
+    display: inline-block;
+    margin-bottom: 5px;
+}
+
+.review .review-description {
+    margin-top: 10px;
+}
+
+
+
+
+/* === Utilities === */
+.text-center {
+    text-align: center;
+}
+
+.mt-1 { margin-top: 10px; }
+.mt-2 { margin-top: 20px; }
+.mt-3 { margin-top: 30px; }
+
+.mb-1 { margin-bottom: 10px; }
+.mb-2 { margin-bottom: 20px; }
+.mb-3 { margin-bottom: 30px; }
+
+.hidden {
+    display: none;
+}
