@@ -21,7 +21,7 @@ Users can submit reviews, and an admin can approve or decline them from a protec
 
 ## Project Structure
 
-<pre> ```
+```
 Product_review_site/
 ├── index.php               # Main product page
 ├── admin.php               # Admin dashboard (protected)
@@ -41,6 +41,5 @@ Product_review_site/
 ├── css/
 │   └── style.css           # Generic styling for UI
 │
-├── README.md
-└── NOTES.md
-``` </pre>
+└── README.md
+```
