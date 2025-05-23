@@ -1,23 +1,37 @@
 <?php
-include "partials/header.php";
+require_once "partials/header.php";
 
-if (isset($_SESSION['logged_in_as_admin']) && ($_SESSION['logged_in_as_admin'] === true)) {
+// REWORK entire form admin login - using AJAX aswell
+
+if (is_admin_logged_in()) {
     redirect("admin.php");
 }
 
 if ($_SERVER['REQUEST_METHOD'] === "POST") {
-    if(!validate_csrf_token()){
-        die("CSRF token validation failed.");
+    if (!validate_csrf_token()) {
+        http_response_code(403); // Forbidden
+        echo json_encode([
+            'success' => false,
+            'message' => 'Failed to validate CSRF token.',
+            'timestamp' => date('Y-m-d H:i:s'),
+            'ip' => $_SERVER['REMOTE_ADDR']
+        ]);
+        exit;
     }
-    
+
     $input_username = trim($_POST['input_username']);
     $input_password = trim($_POST['input_password']);
+    if(!validate_input_data('username', $input_username) ||
+    !validate_input_data('password', $input_password)){
+        $_SESSION['err_msg'] = "Invalid username or password";
+        exit;
+    }
 
     try {
         $sql = "SELECT * FROM admins WHERE username = ? LIMIT 1";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([$input_username]);
-        
+
         if ($admin = $stmt->fetch()) { // found admin
             $admin_password = $admin['password_hash'];
             if (password_verify($input_password, $admin_password)) {
@@ -27,13 +41,16 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                 redirect("admin.php");
                 exit;
             } else {
-                $_SESSION['err_msg'] = "incorrect password";
+                $_SESSION['err_msg'] = "Invalid username or password";
             }
         } else {
-            $_SESSION['err_msg'] = "admin not found";
+            $_SESSION['err_msg'] = "Invalid username or password";
         }
     } catch (PDOException $e) {
         $_SESSION['err_msg'] = "something went wrong..";
+    } catch (Error $e) { // find where to throw this. right now: db down - 0 reviews shown, site working just fine.
+        // log err
+        // echo $e;
     }
 }
 
@@ -79,5 +96,5 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
 </div>
 
 <?php
-include "partials/footer.php";
+include_once "partials/footer.php";
 ?>

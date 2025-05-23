@@ -1,13 +1,22 @@
 <?php
-include "partials/header.php";
+require_once "partials/header.php";
 
 if (!is_admin_logged_in()) {
     redirect("admin_login.php");
 }
 
-$sql = "SELECT * FROM reviews WHERE approved = 0";
-$stmt = $pdo->query($sql);
-$waiting_reviews = $stmt->fetchAll();
+$waiting_reviews = [];
+try {
+    $sql = "SELECT * FROM reviews WHERE approved = 0";
+    $stmt = $pdo->query($sql);
+    $waiting_reviews = $stmt->fetchAll();
+} catch (Exception $e) { // change to Throwable? is it better? when/where.. just default throw(e) and thats it?
+    // log err
+    // echo $e;
+} catch (Error $e) { // find where to throw this. right now: db down - 0 reviews shown, site working just fine.
+    // log err
+    // echo $e;
+}
 
 ?>
 
@@ -56,24 +65,45 @@ $waiting_reviews = $stmt->fetchAll();
 </div>
 
 <?php
-include "partials/footer.php";
+include_once "partials/footer.php";
 ?>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        /* 
+        approve and decline basictly do the same thing. can i make the function f() 
+        and just attach it to both the the bottuns?
+        SAME with the actions in admin_actions - rework it. refractor the functions
+        */
+
         // Admin approve the review
         $('.approve-form').on('submit', function (e) {
             e.preventDefault();
 
             const review_box = $(this).closest('.review');
             const form_data = $(this).serialize();
+            var errMessage = "something went wrong. Please try again later.";
 
             $.post("utils/admin_actions.php", form_data, function (response) {
-                $('#response-message').html(response);
-                review_box.remove();
-            }).fail(function () {
-                $('#response-message').html("<span style='color:red;'>AJAX request failed.</span>");
+                if(response.success){
+                    $('#response-message').html(response.message);
+                    review_box.remove();
+                } else{
+                    $('#response-message').html("<span style='color:red;'>" + response.message + "</span>");
+                }
+            }, 'json').fail(function (xhr) {
+                try {
+                    const json = JSON.parse(xhr.responseText);
+                    if (json.message){
+                        errMessage = json.message;
+                    }
+                } catch (e) { // default error? xhr err?
+                     /* this in debug mode? should the user have this info?
+                     console.warn("Could not parse error response:", xhr.responseText);
+                     */
+                }
+                $('#response-message').html("<span style='color:red;'>" + errMessage + "</span>");
             });
         });
 
@@ -83,12 +113,27 @@ include "partials/footer.php";
 
             const review_box = $(this).closest('.review');
             const form_data = $(this).serialize();
+            var errMessage = "something went wrong. Please try again later.";
 
             $.post("utils/admin_actions.php", form_data, function (response) {
-                $('#response-message').html(response);
-                review_box.remove();
-            }).fail(function () {
-                $('#response-message').html("<span style='color:red;'>AJAX request failed.</span>");
+                if(response.success){
+                    $('#response-message').html(response.message);
+                    review_box.remove();
+                } else{
+                    $('#response-message').html("<span style='color:red;'>" + response.message + "</span>");
+                }
+            }, 'json').fail(function (xhr) {
+                try {
+                    const json = JSON.parse(xhr.responseText);
+                    if (json.message){
+                        errMessage = json.message;
+                    }
+                } catch (e) { // default error? xhr err?
+                     /* this in debug mode? should the user have this info?
+                     console.warn("Could not parse error response:", xhr.responseText);
+                     */
+                }
+                $('#response-message').html("<span style='color:red;'>" + errMessage + "</span>");
             });
         });
     });

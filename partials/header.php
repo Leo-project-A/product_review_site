@@ -1,6 +1,6 @@
 <?php
-include "config.php";
-include "utils/functions.php";
+require_once "config.php";
+require_once "utils/functions.php";
 ?>
 
 <!DOCTYPE html>
