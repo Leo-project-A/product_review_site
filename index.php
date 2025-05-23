@@ -1,9 +1,18 @@
 <?php
-include "partials/header.php";
+require_once "partials/header.php";
 
-$sql = "SELECT * FROM reviews WHERE approved = 1";
-$stmt = $pdo->query($sql);
-$reviews = $stmt->fetchAll();
+$reviews = [];
+try {
+    $sql = "SELECT * FROM reviews WHERE approved = 1"; // limit this shit... 10 at a time. think 1000s of reviews.
+    $stmt = $pdo->query($sql);
+    $reviews = $stmt->fetchAll(); 
+} catch (Exception $e) { // change to Throwable? is it better? when/where.. just default throw(e) and thats it?
+    // log err
+    // echo $e;
+} catch (Error $e) { // find where to throw this. right now: db down - 0 reviews shown, site working just fine.
+    // log err
+    // echo $e;
+}
 
 ?>
 
@@ -78,7 +87,7 @@ $reviews = $stmt->fetchAll();
 </div>
 
 <?php
-include "partials/footer.php";
+include_once "partials/footer.php";
 ?>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -90,10 +99,26 @@ include "partials/footer.php";
             const formData = $(this).serialize();
 
             $.post('utils/submit_review.php', formData, function (response) {
-                $('#response-message').html(response);
-                $('#review-form')[0].reset();
-            }).fail(function () {
-                $('#response-message').html("<span style='color:red;'>AJAX request failed.</span>");
+                if(response.success){
+                    $('#response-message').html(response.message);
+                    // clear the data sent - stop spammign abuse
+                    $('#review-form')[0].reset(); // change
+                } else{
+                    $('#response-message').html("<span style='color:red;'>" + response.message + "</span>");
+                }
+            }, 'json').fail(function (xhr) {
+                var errMessage = "something went wrong. Please try again later.";
+                try {
+                    const json = JSON.parse(xhr.responseText);
+                    if (json.message){
+                        errMessage = json.message;
+                    }
+                } catch (e) { // default error? xhr err?
+                     /* this in debug mode? should the user have this info?
+                     console.warn("Could not parse error response:", xhr.responseText);
+                     */
+                }
+                $('#response-message').html("<span style='color:red;'>" + errMessage + "</span>");
             });
         });
     });

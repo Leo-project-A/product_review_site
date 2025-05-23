@@ -18,9 +18,8 @@ class Database {
                 self::$pdo = new PDO($dsn, self::$username, self::$password);
                 self::$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                 self::$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-
             } catch (PDOException $e){
-                die("Connection failed. Please try again later.");
+                throw new PDOException("Connection failed. Please try again later.");
             }
         }
         return self::$pdo;
@@ -28,7 +27,13 @@ class Database {
 }
 
 /*** Create new connection to DB and start session for the app ***/
-$pdo = Database::connect();
+$pdo = null;
+try {
+    $pdo = Database::connect();
+} catch (PDOException $e){
+    http_response_code(500);
+    // echo "<h1>500 – Internal Server Error</h1><p>We couldn't connect to the database. Please try again later.</p>"; 
+}
 
 if(session_status() === PHP_SESSION_NONE){
     session_start();
