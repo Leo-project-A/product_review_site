@@ -95,6 +95,9 @@ include_once "partials/footer.php";
     document.addEventListener("DOMContentLoaded", function () {
         $('#review-form').on('submit', function (e) {
             e.preventDefault();
+            // form-handling? .always change prpo before finishing submiting. bette UX
+            $('input[type="submit"]').prop('disabled', true); //stop further pressing
+            $('body').css('curser', 'wait');
 
             const formData = $(this).serialize();
 
@@ -119,6 +122,9 @@ include_once "partials/footer.php";
                      */
                 }
                 $('#response-message').html("<span style='color:red;'>" + errMessage + "</span>");
+            }).always(function () { // form-handling? .always return to nomral after finishing submiting
+                $('input[type="submit"]').prop('disabled', false);
+                $('body').css('curser', 'default');
             });
         });
     });
