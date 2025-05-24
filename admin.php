@@ -80,6 +80,9 @@ include_once "partials/footer.php";
         // Admin approve the review
         $('.approve-form').on('submit', function (e) {
             e.preventDefault();
+            // form-handling? .always change prpo before finishing submiting. bette UX
+            $('input[type="submit"]').prop('disabled', true); //stop further pressing
+            $('body').css('curser', 'wait');
 
             const review_box = $(this).closest('.review');
             const form_data = $(this).serialize();
@@ -104,6 +107,9 @@ include_once "partials/footer.php";
                      */
                 }
                 $('#response-message').html("<span style='color:red;'>" + errMessage + "</span>");
+            }).always(function () { // form-handling? .always return to nomral after finishing submiting
+                $('input[type="submit"]').prop('disabled', false);
+                $('body').css('curser', 'default');
             });
         });
 
@@ -134,6 +140,9 @@ include_once "partials/footer.php";
                      */
                 }
                 $('#response-message').html("<span style='color:red;'>" + errMessage + "</span>");
+            }).always(function () { // form-handling? .always return to nomral after finishing submiting
+                $('input[type="submit"]').prop('disabled', false);
+                $('body').css('curser', 'default');
             });
         });
     });

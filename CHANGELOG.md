@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.1.1 – code review - UX & Feedback
+**Date:** 24/05/2025 
+
+### Changes
+- *Enhanced review submission UX* by adding visible progress indicators:
+  - Cursor changes to `wait`
+  - Submit button is disabled during AJAX call
+- *Improved admin action feedback* for approving/declining reviews:
+  - Uses structured JSON responses
+  - Confirmation and error messages are clearly styled and displayed
+
 ## v1.1.0 – code review - Code Quality / Structure
 **Date:** 23/05/2025 
 
