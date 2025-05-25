@@ -17,33 +17,52 @@ function generate_csrf_token(){
 }
 
 function validate_csrf_token(){
-    if(isset($_POST['csrf_token']) && ($_POST['csrf_token'] == $_SESSION['csrf_token'])){
+    if(isset($_SESSION['csrf_token']) && isset($_POST['csrf_token']) 
+    && hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])){
         return true;
     }
     return false;
 }
 
-function validate_input_data($datatype, $data){
-    $limit_username_min = 4;
-    $limit_username_max = 50;
-    $limit_username_char = 'a-zA-Z0-9._-';
-    $username_regex = "/^[$limit_username_char]{{$limit_username_min},{$limit_username_max}}$/";;
+function validate_input_data($datatype, $data) {
+    if (!defined('DATA_RULES') || !isset(DATA_RULES[$datatype])){
+        return false;
+    } 
 
-    $limit_password_min = 8;
-    $limit_password_max = 255;
+    $rule = DATA_RULES[$datatype];
 
-    $limit_rating_min = 1;
-    $limit_rating_max = 5;
-    
-    $limit_description_min = 1;
-    $limit_description_max = 500;
-
-    return match($datatype){
-        "username" => preg_match($username_regex, $data),
-        "password" =>  strlen($data) >= $limit_password_min && strlen($data) <= $limit_password_max,
-        "rating" => is_numeric($data) && $data >= $limit_rating_min && $data <= $limit_rating_max,
-        "description" => strlen($data) >= $limit_description_min && strlen($data) <= $limit_description_max,
-        "review_id" => is_numeric($data),
+    return match ($datatype) {
+        'username' => preg_match("/^{$rule['pattern']}+$/", $data)
+            && strlen($data) >= $rule['min'] && strlen($data) <= $rule['max'],
+        'password' => strlen($data) >= $rule['min'] && strlen($data) <= $rule['max'],
+        'rating' => filter_var($data, FILTER_VALIDATE_INT) && $data >= $rule['min'] && $data <= $rule['max'],
+        'description' => strlen($data) >= $rule['min'] && strlen($data) <= $rule['max'],
+        'review_id' => is_numeric($data),
         default => false
     };
+}
+
+function sanitize_output($data){
+    return htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
+}
+
+function set_flash_message($type, $message){
+    if(!isset($_SESSION['flash_messages'])){
+        $_SESSION['flash_messages'] = [];
+    }
+
+    $_SESSION['flash_messages'][] = [
+        'type' => $type,
+        'message' => $message
+    ];
+}
+
+function flash_meesages(){
+    return; // NEEDS rework - maybe add notification partial
+}
+
+function log_error() {
+    // ADD: logging system for error. 
+    // make a global system reuse for logging bugs + logging user actions + logging login attempts + logging user abuse
+    return;
 }

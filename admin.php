@@ -5,6 +5,7 @@ if (!is_admin_logged_in()) {
     redirect("admin_login.php");
 }
 
+$csrf_token = generate_csrf_token();
 $waiting_reviews = [];
 try {
     $sql = "SELECT * FROM reviews WHERE approved = 0";
@@ -31,29 +32,29 @@ try {
         <div id="response-message"></div>
 
         <?php if (count($waiting_reviews) < 1): ?>
-            <span> <?php echo "You have no pending reviews currently" ?> </span>
+            <span> <?= "You have no pending reviews currently" ?> </span>
         <?php endif; ?>
 
         <?php foreach ($waiting_reviews as $cur_review): ?>
             <div class="review">
-                <h3 class="user-name"><?php echo htmlspecialchars($cur_review['name']); ?></h3>
-                <span class="review-rating"><?php echo htmlspecialchars($cur_review['rating']); ?> stars</span>
+                <h3 class="user-name"><?= sanitize_output($cur_review['name']); ?></h3>
+                <span class="review-rating"><?= sanitize_output($cur_review['rating']); ?> stars</span>
                 <p class="review-description">
-                    <?php echo htmlspecialchars($cur_review['description']); ?>
+                    <?= sanitize_output($cur_review['description']); ?>
                 </p>
 
                 <div class="button-row">
                     <form method="POST" action="" class="form approve-form">
-                        <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
-                        <input type="hidden" name="review_id" value="<?php echo htmlspecialchars($cur_review['id']); ?>">
+                        <input type="hidden" name="csrf_token" value="<?= sanitize_output($csrf_token); ?>">
+                        <input type="hidden" name="review_id" value="<?= sanitize_output($cur_review['id']); ?>">
                         <input type="hidden" name="action" value="approve">
                         <input class="approve" type="submit" value="approve">
                     </form>
 
                     <form method="POST" action="" class="form decline-form"
                         onsubmit="return confirm('are you sure you want to delete?');">
-                        <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
-                        <input type="hidden" name="review_id" value="<?php echo htmlspecialchars($cur_review['id']); ?>">
+                        <input type="hidden" name="csrf_token" value="<?= sanitize_output($csrf_token); ?>">
+                        <input type="hidden" name="review_id" value="<?= sanitize_output($cur_review['id']); ?>">
                         <input type="hidden" name="action" value="decline">
                         <input class="decline" type="submit" value="decline">
                     </form>
@@ -69,7 +70,7 @@ include_once "partials/footer.php";
 ?>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
+<script> // consider moving all the scripts to their own script file - you could make more helper functions in javascript
     document.addEventListener("DOMContentLoaded", function () {
         /* 
         approve and decline basictly do the same thing. can i make the function f() 
@@ -90,10 +91,10 @@ include_once "partials/footer.php";
 
             $.post("utils/admin_actions.php", form_data, function (response) {
                 if(response.success){
-                    $('#response-message').html(response.message);
+                    $('#response-message').text(response.message);
                     review_box.remove();
                 } else{
-                    $('#response-message').html("<span style='color:red;'>" + response.message + "</span>");
+                    $('#response-message').html($('<span>').css('color', 'red').text(response.message));
                 }
             }, 'json').fail(function (xhr) {
                 try {
@@ -106,7 +107,7 @@ include_once "partials/footer.php";
                      console.warn("Could not parse error response:", xhr.responseText);
                      */
                 }
-                $('#response-message').html("<span style='color:red;'>" + errMessage + "</span>");
+                $('#response-message').html($('<span>').css('color', 'red').text(errMessage));
             }).always(function () { // form-handling? .always return to nomral after finishing submiting
                 $('input[type="submit"]').prop('disabled', false);
                 $('body').css('curser', 'default');
@@ -123,10 +124,10 @@ include_once "partials/footer.php";
 
             $.post("utils/admin_actions.php", form_data, function (response) {
                 if(response.success){
-                    $('#response-message').html(response.message);
+                    $('#response-message').text(response.message);
                     review_box.remove();
                 } else{
-                    $('#response-message').html("<span style='color:red;'>" + response.message + "</span>");
+                    $('#response-message').html($('<span>').css('color', 'red').text(response.message));
                 }
             }, 'json').fail(function (xhr) {
                 try {
@@ -139,12 +140,11 @@ include_once "partials/footer.php";
                      console.warn("Could not parse error response:", xhr.responseText);
                      */
                 }
-                $('#response-message').html("<span style='color:red;'>" + errMessage + "</span>");
+                $('#response-message').html($('<span>').css('color', 'red').text(errMessage));
             }).always(function () { // form-handling? .always return to nomral after finishing submiting
                 $('input[type="submit"]').prop('disabled', false);
                 $('body').css('curser', 'default');
             });
         });
     });
-
 </script>
