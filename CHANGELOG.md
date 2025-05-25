@@ -1,5 +1,20 @@
 # Changelog
 
+## v1.2.0 – code review - Best Practices
+**Date:** 25/05/2025 
+
+### Changes
+
+- CSRF tokens are now generated once per page (only when needed) and properly validated across all relevant form submissions.
+- Improved HTML escaping using `htmlspecialchars()` to prevent XSS vulnerabilities across all output layers.
+- Enhanced string handling for messages injected into the DOM via JavaScript, ensuring no raw HTML is injected.
+- Introduced centralized `DATA_RULES` constant in `config.php` to define validation rules (length, pattern, type) for all user input fields.
+- Added strict input validation on the server side using a `validate_input_data()` helper, rejecting invalid data before processing or storing.
+- System messages are now separated by purpose:
+  - Global messages (login/logout success, system errors) are handled using the new `flash()` mechanism.
+  - Area-specific messages (e.g., form feedback) are handled through AJAX responses and displayed inline.
+  - Debugging errors and internal issues are logged or suppressed from users to avoid exposing sensitive details.
+
 ## v1.1.1 – code review - UX & Feedback
 **Date:** 24/05/2025 
 
