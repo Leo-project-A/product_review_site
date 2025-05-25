@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.2.0 – code review - Best Practices
+## v1.2.0 – code review - UI/UX & User feedback changes
 **Date:** 25/05/2025 
 
 ### Changes
