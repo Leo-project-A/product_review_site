@@ -1,6 +1,7 @@
 <?php
 require_once "config.php";
 require_once "utils/functions.php";
+
 ?>
 
 <!DOCTYPE html>
@@ -14,3 +15,16 @@ require_once "utils/functions.php";
 </head>
 
 <body>
+
+    <!-- Notification Container -->
+    <?php if (isset($_SESSION['flash_messages'])): ?>
+        <div class="notification-container">
+            <?php $messages = $_SESSION['flash_messages']; ?>
+            <?php unset($_SESSION['flash_messages']); ?>
+            <?php foreach ($messages as $flash_message): ?>
+                <div class="notification <?= $flash_message['type'] ?? '' ?>">
+                    <?= $flash_message['message']; ?>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>

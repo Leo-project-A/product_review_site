@@ -7,6 +7,8 @@ if (is_admin_logged_in()) {
     redirect("admin.php");
 }
 
+$csrf_token = generate_csrf_token();
+
 if ($_SERVER['REQUEST_METHOD'] === "POST") {
     if (!validate_csrf_token()) {
         http_response_code(403); // Forbidden
@@ -21,8 +23,10 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
 
     $input_username = trim($_POST['input_username']);
     $input_password = trim($_POST['input_password']);
-    if(!validate_input_data('username', $input_username) ||
-    !validate_input_data('password', $input_password)){
+    if (
+        !validate_input_data('username', $input_username) ||
+        !validate_input_data('password', $input_password)
+    ) {
         $_SESSION['err_msg'] = "Invalid username or password";
         exit;
     }
@@ -36,8 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
             $admin_password = $admin['password_hash'];
             if (password_verify($input_password, $admin_password)) {
                 $_SESSION['logged_in_as_admin'] = true;
-                $_SESSION['user'] = $input_username;
-                $_SESSION['user_msg'] = "connected successfully: $input_username";
+                set_flash_message("info", "connected successfully: $input_username");
                 redirect("admin.php");
                 exit;
             } else {
@@ -81,13 +84,17 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
             </p>
         <?php endif; ?>
 
-        <form method="POST" action="" class="form">
-            <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
+        <form id="review-form" method="POST" action="" class="form">
+            <input type="hidden" name="csrf_token" value="<?= sanitize_output($csrf_token); ?>">
+
             <label for="input_username">Username</label>
-            <input type="text" id="input_username" name="input_username" required>
+            <?php $rule = DATA_RULES['username']; ?>
+            <input type="text" id="input_username" name="input_username" pattern="<?= $rule['pattern'] ?>" required>
 
             <label for="input_password">Password</label>
-            <input type="password" id="input_password" name="input_password" required>
+            <?php $rule = DATA_RULES['password']; ?>
+            <input type="password" id="input_password" name="input_password" minlength="<?= $rule['min'] ?>"
+                maxlength="<?= $rule['max'] ?>" required>
 
             <input type="submit" value="Login">
         </form>

@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
     if (!validate_input_data('username', $input_name)) {
         echo json_encode([
             'success' => false,
-            'message' => 'User name is unacceptable.',
+            'message' => 'Username is unacceptable.',
         ]);
         exit;
     }
