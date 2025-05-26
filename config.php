@@ -61,12 +61,12 @@ class Database
 /*** Create new connection to DB and start session for the app ***/
 $pdo = null;
 
-/* try {
+try {
     $pdo = Database::connect();
 } catch (PDOException $e) {
     http_response_code(500);
     // echo "<h1>500 – Internal Server Error</h1><p>We couldn't connect to the database. Please try again later.</p>"; 
-} */
+}
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
