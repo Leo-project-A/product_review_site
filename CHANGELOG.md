@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.3.0 – code reviwe - Security
+**Date:** 26/05/2025 
+
+### Changes
+
+- added `auth.php` for centralized authentication and admin session handling
+- added `protection.php` for form validation, rate limiting, and anti-spam measures
+- Request rate limiting per IP to prevent abuse
+- Duplicate review detection based on username
+- Honeypot field protection and form timing validation (anti-bot)
+
+- Reworked CSRF token generation and validation logic (now stricter and more modular)
+- Generalized login feedback messages for cleaner UX
+- Cleaned up `admin_actions.php` for better structure and DRY principles
+- Removed logic from `logout.php` (replaced by new session handling in `auth.php`)
+
 ## v1.2.0 – code review - Best Practices
 **Date:** 25/05/2025 
 

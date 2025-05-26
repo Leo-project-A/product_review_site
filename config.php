@@ -1,8 +1,18 @@
 <?php
 
 // GLOBAL INPUT VALIDATION RULES
+const ADMIN_ACTIONS = ['approve', 'decline'];
+
+const RATE_LIMIT = 3;
+const RATE_LIMIT_WINDOW = 30;
+
+const FORM_TIME_MIN = 2;
+const FORM_TIME_MAX = 3600;
+
 const DATA_RULES = [
     'username' => [
+        'min' => 4,
+        'max' => 50,
         'pattern' => '[a-zA-Z0-9._\-]{4,50}'
     ],
     'password' => [
@@ -51,12 +61,12 @@ class Database
 /*** Create new connection to DB and start session for the app ***/
 $pdo = null;
 
-try {
+/* try {
     $pdo = Database::connect();
 } catch (PDOException $e) {
     http_response_code(500);
     // echo "<h1>500 – Internal Server Error</h1><p>We couldn't connect to the database. Please try again later.</p>"; 
-}
+} */
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();

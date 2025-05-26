@@ -1,7 +1,7 @@
 <?php
-require_once "partials/header.php";
+require_once __DIR__ . "/partials/header.php";
 
-$csrf_token = generate_csrf_token();
+generate_csrf_token();
 $reviews = [];
 
 try {
@@ -42,12 +42,11 @@ try {
         <div id="response-message"></div>
 
         <form id="review-form" method="POST" action="" class="form">
-            <input type="hidden" name="csrf_token" value="<?= sanitize_output($csrf_token); ?>">
+            <?= form_hidden_fields(); ?>
 
             <label for="input_name">Your name please</label>
             <?php $rule = DATA_RULES['username']; ?>
-            <input id="input_name" type="text" name="input_name" pattern="<?= $rule['pattern'] ?>"
-                title="Only allowed: <?= $rule['pattern'] ?>" required>
+            <input id="input_name" type="text" name="input_name" pattern="<?= $rule['pattern'] ?>" required>
 
             <label for="rating">How do you rate this product (1–5)</label>
             <select id="rating" name="rating" required>
@@ -111,8 +110,7 @@ include_once "partials/footer.php";
             $.post('utils/submit_review.php', formData, function (response) {
                 if (response.success) {
                     $('#response-message').text(response.message);
-                    // clear the data sent - stop spammign abuse
-                    $('#review-form')[0].reset(); // change
+                    $('#review-form')[0].reset(); 
                 } else {
                     $('#response-message').html($('<span>').css('color', 'red').text(response.message));
                 }

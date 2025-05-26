@@ -1,26 +1,37 @@
 <?php
 
-require_once "../config.php"; // for pdo
-require_once "functions.php"; // for tokens and validation
+require_once __DIR__ . "/../config.php"; // for pdo
+require_once __DIR__ . "/functions.php"; // for tokens and validation
+require_once __DIR__ . "/../utils/protection.php";
 
 header("Content-Type: application/JSON");
 
 if ($_SERVER['REQUEST_METHOD'] === "POST") {
     /* REFRACTOR funcions - used many times */
-    if (!validate_csrf_token()) {
-        http_response_code(403); // Forbidden
-        echo json_encode([
-            'success' => false,
-            'message' => 'Failed to validate CSRF token.',
-            'timestamp' => date('Y-m-d H:i:s'),
-            'ip' => $_SERVER['REMOTE_ADDR']
-        ]);
-        exit;
-    }
+    csrf_check();
+    check_rate_limit('submit_review');
 
     $input_name = trim($_POST['input_name']);
     $input_rating = trim($_POST['rating']);
     $input_description = trim($_POST['description']);
+
+    if (!empty($_POST['contact'])) { //probebly bot 
+        http_response_code(403);
+        echo json_encode([
+            'success' => false,
+            'message' => 'Form declined',
+        ]);
+        exit;
+    }
+
+    if (check_form_timeout()) {
+        http_response_code(403);
+        echo json_encode([
+            'success' => false,
+            'message' => 'Form timeout.'
+        ]);
+        exit;
+    }
 
     if (!validate_input_data('username', $input_name)) {
         echo json_encode([
@@ -40,6 +51,15 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
         echo json_encode([
             'success' => false,
             'message' => 'Description mus be 1-500 characters long',
+        ]);
+        exit;
+    }
+
+    if (!check_duplicate_review($input_name)) {
+        http_response_code(409);
+        echo json_encode([
+            'success' => false,
+            'message' => 'Username Already submitted a review.',
         ]);
         exit;
     }

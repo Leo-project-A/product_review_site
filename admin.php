@@ -1,12 +1,11 @@
 <?php
-require_once "partials/header.php";
+require_once  __DIR__ . "/partials/header.php";
 
-if (!is_admin_logged_in()) {
-    redirect("admin_login.php");
-}
+require_admin_login();
+generate_csrf_token();
 
-$csrf_token = generate_csrf_token();
 $waiting_reviews = [];
+
 try {
     $sql = "SELECT * FROM reviews WHERE approved = 0";
     $stmt = $pdo->query($sql);
@@ -44,20 +43,15 @@ try {
                 </p>
 
                 <div class="button-row">
-                    <form method="POST" action="" class="form approve-form">
-                        <input type="hidden" name="csrf_token" value="<?= sanitize_output($csrf_token); ?>">
-                        <input type="hidden" name="review_id" value="<?= sanitize_output($cur_review['id']); ?>">
-                        <input type="hidden" name="action" value="approve">
-                        <input class="approve" type="submit" value="approve">
-                    </form>
-
-                    <form method="POST" action="" class="form decline-form"
-                        onsubmit="return confirm('are you sure you want to delete?');">
-                        <input type="hidden" name="csrf_token" value="<?= sanitize_output($csrf_token); ?>">
-                        <input type="hidden" name="review_id" value="<?= sanitize_output($cur_review['id']); ?>">
-                        <input type="hidden" name="action" value="decline">
-                        <input class="decline" type="submit" value="decline">
-                    </form>
+                    <?php foreach (ADMIN_ACTIONS as $action): ?>
+                        <form method="POST" action="" class="form <?= $action ?>-form">
+                            <?= form_hidden_fields(); ?>
+                            
+                            <input type="hidden" name="review_id" value="<?= sanitize_output($cur_review['id']); ?>">
+                            <input type="hidden" name="action" value="<?= $action ?>">
+                            <input class="<?= $action ?>" type="submit" value="<?= $action ?>">
+                        </form>
+                    <?php endforeach; ?>
                 </div>
             </div>
         <?php endforeach; ?>
@@ -90,22 +84,22 @@ include_once "partials/footer.php";
             var errMessage = "something went wrong. Please try again later.";
 
             $.post("utils/admin_actions.php", form_data, function (response) {
-                if(response.success){
+                if (response.success) {
                     $('#response-message').text(response.message);
                     review_box.remove();
-                } else{
+                } else {
                     $('#response-message').html($('<span>').css('color', 'red').text(response.message));
                 }
             }, 'json').fail(function (xhr) {
                 try {
                     const json = JSON.parse(xhr.responseText);
-                    if (json.message){
+                    if (json.message) {
                         errMessage = json.message;
                     }
                 } catch (e) { // default error? xhr err?
-                     /* this in debug mode? should the user have this info?
-                     console.warn("Could not parse error response:", xhr.responseText);
-                     */
+                    /* this in debug mode? should the user have this info?
+                    console.warn("Could not parse error response:", xhr.responseText);
+                    */
                 }
                 $('#response-message').html($('<span>').css('color', 'red').text(errMessage));
             }).always(function () { // form-handling? .always return to nomral after finishing submiting
@@ -123,22 +117,22 @@ include_once "partials/footer.php";
             var errMessage = "something went wrong. Please try again later.";
 
             $.post("utils/admin_actions.php", form_data, function (response) {
-                if(response.success){
+                if (response.success) {
                     $('#response-message').text(response.message);
                     review_box.remove();
-                } else{
+                } else {
                     $('#response-message').html($('<span>').css('color', 'red').text(response.message));
                 }
             }, 'json').fail(function (xhr) {
                 try {
                     const json = JSON.parse(xhr.responseText);
-                    if (json.message){
+                    if (json.message) {
                         errMessage = json.message;
                     }
                 } catch (e) { // default error? xhr err?
-                     /* this in debug mode? should the user have this info?
-                     console.warn("Could not parse error response:", xhr.responseText);
-                     */
+                    /* this in debug mode? should the user have this info?
+                    console.warn("Could not parse error response:", xhr.responseText);
+                    */
                 }
                 $('#response-message').html($('<span>').css('color', 'red').text(errMessage));
             }).always(function () { // form-handling? .always return to nomral after finishing submiting

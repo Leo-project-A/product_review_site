@@ -5,45 +5,16 @@ function redirect($location){
     exit;
 }
 
-function is_admin_logged_in() {
-    return isset($_SESSION['logged_in_as_admin']) && $_SESSION['logged_in_as_admin'] === true;
-}
+function form_hidden_fields()
+{
+    $csfr_token = get_csrf_token();
+    $timestamp = time();
 
-function generate_csrf_token(){
-    if(!isset($_SESSION['csrf_token'])){
-        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-    }
-    return $_SESSION['csrf_token'];
-}
-
-function validate_csrf_token(){
-    if(isset($_SESSION['csrf_token']) && isset($_POST['csrf_token']) 
-    && hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])){
-        return true;
-    }
-    return false;
-}
-
-function validate_input_data($datatype, $data) {
-    if (!defined('DATA_RULES') || !isset(DATA_RULES[$datatype])){
-        return false;
-    } 
-
-    $rule = DATA_RULES[$datatype];
-
-    return match ($datatype) {
-        'username' => preg_match("/^{$rule['pattern']}+$/", $data)
-            && strlen($data) >= $rule['min'] && strlen($data) <= $rule['max'],
-        'password' => strlen($data) >= $rule['min'] && strlen($data) <= $rule['max'],
-        'rating' => filter_var($data, FILTER_VALIDATE_INT) && $data >= $rule['min'] && $data <= $rule['max'],
-        'description' => strlen($data) >= $rule['min'] && strlen($data) <= $rule['max'],
-        'review_id' => is_numeric($data),
-        default => false
-    };
-}
-
-function sanitize_output($data){
-    return htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
+    return <<<html
+        <input type="hidden" name="csrf_token" value="$csfr_token">
+        <input type="text" name="contact" value="" style="display: none;">
+        <input type="hidden" name="form_loaded_at" value="$timestamp">
+    html;
 }
 
 function set_flash_message($type, $message){

@@ -1,6 +1,8 @@
 <?php
-require_once "config.php";
-require_once "utils/functions.php";
+require_once  __DIR__ . "/../config.php";
+require_once  __DIR__ . "/../utils/functions.php";
+require_once  __DIR__ . "/../utils/auth.php";
+require_once  __DIR__ . "/../utils/protection.php";
 
 ?>
 
@@ -16,7 +18,7 @@ require_once "utils/functions.php";
 
 <body>
 
-    <!-- Notification Container -->
+    <!-- Notification Container (maybe move later to a different part) --> 
     <?php if (isset($_SESSION['flash_messages'])): ?>
         <div class="notification-container">
             <?php $messages = $_SESSION['flash_messages']; ?>

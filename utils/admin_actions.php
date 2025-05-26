@@ -1,23 +1,13 @@
 <?php
 
-require_once "../config.php"; // for pdo
-require_once "functions.php"; // for tokens and validation
+require_once __DIR__ . "/../config.php"; // for pdo
+require_once __DIR__ . "/functions.php"; // for tokens and validation
 
 header("Content-Type: application/JSON");
 
 if ($_SERVER['REQUEST_METHOD'] === "POST") {
     /* REFRACTOR funcions - used many times */
-    if (!validate_csrf_token()) {
-        http_response_code(403); // Forbidden
-        echo json_encode([
-            'success' => false,
-            'message' => 'Failed to validate CSRF token.',
-            'id' => $review_id,
-            'timestamp' => date('Y-m-d H:i:s'),
-            'ip' => $_SERVER['REMOTE_ADDR']
-        ]);
-        exit;
-    }
+    csrf_check();
 
     $review_id = $_POST['review_id'] ?? null;
     if (!validate_input_data('review_id', $review_id)) {
@@ -28,7 +18,16 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
         exit;
     }
     $action = $_POST['action'] ?? '';
-    if ($action !== 'approve' || $action !== 'decline') {
+    $sql = "";
+    $user_msg = '';
+
+    if ($action === "approve") {
+        $sql = "UPDATE reviews SET approved = 1 WHERE id = ?";
+        $user_msg = 'Review have been aproved!';
+    } elseif ($action === "decline") {
+        $sql = "DELETE FROM reviews WHERE id = ?";
+        $user_msg = 'Review have been declined!';
+    } else {
         echo json_encode([
             'success' => false,
             'message' => 'Iligal action by admin.',
@@ -36,66 +35,32 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
         exit;
     }
 
-    if ($action === "approve") {
-        try {
-            $sql = "UPDATE reviews SET approved = 1 WHERE id = ?";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([$review_id]);
-        } catch (e) {
-            http_response_code(500);
-            exit;
-        }
+    try {
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$review_id]);
+    } catch (e) {
+        http_response_code(500);
+        exit;
+    }
 
-        http_response_code(200); // return to success block 
-        if ($stmt->rowCount() > 0) { // success to UPDATE table
-            echo json_encode([
-                'success' => true,
-                'message' => 'your review was accepted. it is now pending approval.<br> thank you.',
-                'id' => $review_id,
-                'timestamp' => date('Y-m-d H:i:s'),
-                'ip' => $_SERVER['REMOTE_ADDR']
-            ]);
-            exit;
-        } else {  // failed to UPDATE table
-            echo json_encode([
-                'success' => false,
-                'message' => 'something happened while trying to send the review.',
-                'id' => $review_id,
-                'timestamp' => date('Y-m-d H:i:s'),
-                'ip' => $_SERVER['REMOTE_ADDR']
-            ]);
-            exit;
-        }
-
-    } elseif ($action === "decline") {
-        try {
-            $sql = "DELETE FROM reviews WHERE id = ?";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([$review_id]);
-        } catch (e) {
-            http_response_code(500);
-            exit;
-        }
-
-        http_response_code(200); // return to success block 
-        if ($stmt->rowCount() > 0) { // success to DELETE table
-            echo json_encode([
-                'success' => true,
-                'message' => 'your review was accepted. it is now pending approval.<br> thank you.',
-                'id' => $review_id,
-                'timestamp' => date('Y-m-d H:i:s'),
-                'ip' => $_SERVER['REMOTE_ADDR']
-            ]);
-            exit;
-        } else {  // failed to DELETE table
-            echo json_encode([
-                'success' => false,
-                'message' => 'something happened while trying to send the review.',
-                'id' => $review_id,
-                'timestamp' => date('Y-m-d H:i:s'),
-                'ip' => $_SERVER['REMOTE_ADDR']
-            ]);
-            exit;
-        }
+    http_response_code(200); // return to success block 
+    if ($stmt->rowCount() > 0) { // success to UPDATE table
+        echo json_encode([
+            'success' => true,
+            'message' => $user_msg,
+            'id' => $review_id,
+            'timestamp' => date('Y-m-d H:i:s'),
+            'ip' => $_SERVER['REMOTE_ADDR']
+        ]);
+        exit;
+    } else {  // failed to UPDATE table
+        echo json_encode([
+            'success' => false,
+            'message' => 'something happened.. please try again later',
+            'id' => $review_id,
+            'timestamp' => date('Y-m-d H:i:s'),
+            'ip' => $_SERVER['REMOTE_ADDR']
+        ]);
+        exit;
     }
 }
