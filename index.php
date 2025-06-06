@@ -115,7 +115,7 @@ include_once "partials/footer.php";
                     $('#response-message').html($('<span>').css('color', 'red').text(response.message));
                 }
             }, 'json').fail(function (xhr) {
-                var errMessage = "something went wrong. Please try again later.";
+                var errMessage = 'something went wrong. Please try again later - index';
                 try {
                     const json = JSON.parse(xhr.responseText);
                     if (json.message) {

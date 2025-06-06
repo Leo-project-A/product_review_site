@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.3.0 – code reviwe - Security
+## v1.3.0 – code review - Security
 **Date:** 26/05/2025 
 
 ### Changes

@@ -81,7 +81,7 @@ include_once "partials/footer.php";
 
             const review_box = $(this).closest('.review');
             const form_data = $(this).serialize();
-            var errMessage = "something went wrong. Please try again later.";
+            var errMessage = 'something went wrong. Please try again later. admin-84';
 
             $.post("utils/admin_actions.php", form_data, function (response) {
                 if (response.success) {

@@ -16,7 +16,7 @@ const DATA_RULES = [
         'pattern' => '[a-zA-Z0-9._\-]{4,50}'
     ],
     'password' => [
-        'min' => 8,
+        'min' => 5,
         'max' => 255
     ],
     'rating' => [
@@ -65,7 +65,7 @@ try {
     $pdo = Database::connect();
 } catch (PDOException $e) {
     http_response_code(500);
-    // echo "<h1>500 – Internal Server Error</h1><p>We couldn't connect to the database. Please try again later.</p>"; 
+    echo "<h1>500 – Internal Server Error</h1><p>We couldn't connect to the database. Please try again later.</p>"; 
 }
 
 if (session_status() === PHP_SESSION_NONE) {

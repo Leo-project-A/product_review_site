@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
     } else {  // failed to UPDATE table
         echo json_encode([
             'success' => false,
-            'message' => 'something happened.. please try again later',
+            'message' => 'something went wrong. Please try again later. admin_actions-59',
             'id' => $review_id,
             'timestamp' => date('Y-m-d H:i:s'),
             'ip' => $_SERVER['REMOTE_ADDR']
