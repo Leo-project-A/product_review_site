@@ -1,5 +1,20 @@
 # Changelog
 
+## v1.4.0 – Error Handling Overhaul (code review issues)
+**Date:** 29/07/2025 
+
+### Highlights
+- Centralized error handling: one global handler for all PHP errors/exceptions
+- Structured logging: every error is written to logs/app.log
+- Recorded login attempts (username/IP/success/time) and enforced temporary lockouts (HTTP 429) on repeated failures.
+- Abuse protection: login attempt tracking + lockout/rate limiting; tighter anti-spam/duplicate-review checks.
+
+### Changes
+- Implemented global `set_error_handler` / `set_exception_handler` with environment-aware messaging (verbose in `dev`, generic in `prod`).
+- Added `logs/app.log`; for logging errors without breaking the site.
+- Added `utils/admin_login_process.php` and updated admin_login.php to use AJAX responses.
+- Hardened anti-abuse checks: honeypot + form timing, and duplicate-review detection to block spam.
+
 ## v1.3.0 – code review - Security
 **Date:** 26/05/2025 
 

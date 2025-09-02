@@ -1,5 +1,18 @@
 <?php
 
+define('APP_ENV', 'dev');
+define('LOG_FILE', __DIR__ . '/logs/app.log');
+date_default_timezone_set("Asia/Jerusalem");
+
+if (APP_ENV === 'dev'){
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
+    error_reporting(E_ALL);
+} else { // when you change to 'prod' this will never be reached.. is this ok?
+    ini_set('display_errors', 0);
+    error_reporting(E_ALL);
+}
+
 // GLOBAL INPUT VALIDATION RULES
 const ADMIN_ACTIONS = ['approve', 'decline'];
 
@@ -26,7 +39,8 @@ const DATA_RULES = [
     'description' => [
         'min' => 1,
         'max' => 500
-    ]
+    ],
+    'review_id' => []
 ];
 
 // DATABASE stuff 
@@ -41,6 +55,8 @@ class Database
 
     private static $pdo = null;
 
+    public static $DBconnetion = false;
+
     public static function connect()
     {
         if (!self::$pdo) {
@@ -50,24 +66,70 @@ class Database
                 self::$pdo = new PDO($dsn, self::$username, self::$password);
                 self::$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                 self::$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+
+                self::$DBconnetion = true;
             } catch (PDOException $e) {
-                throw new PDOException("Connection failed. Please try again later.");
+                // throw new RuntimeException("Connection failed. Please try again later.", 500, $e);
             }
         }
         return self::$pdo;
     }
 }
 
-/*** Create new connection to DB and start session for the app ***/
-$pdo = null;
-
-try {
-    $pdo = Database::connect();
-} catch (PDOException $e) {
-    http_response_code(500);
-    echo "<h1>500 – Internal Server Error</h1><p>We couldn't connect to the database. Please try again later.</p>"; 
-}
-
+/*** Start session for the app and Create new connection to DB ***/
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+if(!isset($_SERVER['UNIQUE_ID'])){
+    $_SERVER['UNIQUE_ID'] = bin2hex(random_bytes(8));
+}
+
+$pdo = null;
+
+// try to connect to the DB, if not successful- get null, DBconnection is false 
+$pdo = Database::connect();
+
+header('X-request-ID: ' .$_SERVER['UNIQUE_ID']);
+
+
+function log_error(Throwable $e, array $extra = []){
+    $entry = [
+        'rid' => $_SERVER['UNIQUE_ID'],
+        'time' => date('c'),
+        'type' => get_class($e),
+        'file' => $e->getFile(),
+        'line' => $e->getLine(),
+        'msg' => $e->getMessage(),
+        'trace' => $e->getTraceAsString()
+    ] + $extra;
+
+    error_log(json_encode($entry).PHP_EOL, 3, LOG_FILE);
+}
+
+set_error_handler(function ($sev, $msg, $file, $line) {
+    log_error(new ErrorException($msg, 0 , $sev, $file, $line,));
+    return APP_ENV === 'prod';
+});
+
+set_exception_handler(function (Throwable $e) {
+    log_error($e);
+    http_response_code($e->getCode() ?: 500);
+    
+    if ($e instanceof DomainException) {
+        $json_response = $e->getMessage();
+    } else {
+        if ( APP_ENV === 'dev') {
+            $json_response = $e->getMessage();
+        } else {
+            $json_response = "Server Error";
+        }
+    }
+
+    echo json_encode([
+        'success' => false,
+        'message' => $json_response,
+        'rid' => $_SERVER['UNIQUE_ID']
+    ]);
+    exit;
+});

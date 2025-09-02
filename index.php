@@ -8,14 +8,10 @@ try {
     $sql = "SELECT * FROM reviews WHERE approved = 1"; // limit this shit... 10 at a time. think 1000s of reviews.
     $stmt = $pdo->query($sql);
     $reviews = $stmt->fetchAll();
-} catch (Exception $e) { // change to Throwable? is it better? when/where.. just default throw(e) and thats it?
-    // log err
-    // echo $e;
-} catch (Error $e) { // find where to throw this. right now: db down - 0 reviews shown, site working just fine.
-    // log err
-    // echo $e;
+} catch (Throwable $e) {
+    log_error($e);
+    Database::$DBconnetion = false;
 }
-
 ?>
 
 <div class="page-container">
@@ -74,7 +70,9 @@ try {
     <h2 class="subtitle">All User Reviews</h2>
     <div class="review-container">
 
-        <?php if (count($reviews) < 1): ?>
+        <?php if (!Database::$DBconnetion): ?>
+            <span> <?= "Connection to database failed. Please try again later :(" ?> </span>
+        <?php elseif (count($reviews) < 1): ?>
             <span> <?= "No reviews currently :(" ?> </span>
         <?php else: ?>
             <?php foreach ($reviews as $cur_review): ?>
@@ -99,38 +97,42 @@ include_once "partials/footer.php";
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script> // consider moving all the scripts to their own script file - you could make more helper functions in javascript
     document.addEventListener("DOMContentLoaded", function () {
-        $('#review-form').on('submit', function (e) {
-            e.preventDefault();
-            // form-handling? .always change prop before finishing submiting. bette UX
-            $('input[type="submit"]').prop('disabled', true); //stop further pressing
-            $('body').css('curser', 'wait');
+        const $form = $('#review-form');
+        const $user_msg = $('#response-message');
 
-            const formData = $(this).serialize();
+        $form.on('submit', function (e) {
+            e.preventDefault();
+            const formData = $form.serialize();
+            lockForm();
 
             $.post('utils/submit_review.php', formData, function (response) {
-                if (response.success) {
-                    $('#response-message').text(response.message);
-                    $('#review-form')[0].reset(); 
-                } else {
-                    $('#response-message').html($('<span>').css('color', 'red').text(response.message));
-                }
-            }, 'json').fail(function (xhr) {
-                var errMessage = 'something went wrong. Please try again later - index';
-                try {
-                    const json = JSON.parse(xhr.responseText);
-                    if (json.message) {
-                        errMessage = json.message;
-                    }
-                } catch (e) { // default error? xhr err?
-                    /* this in debug mode? should the user have this info?
-                    console.warn("Could not parse error response:", xhr.responseText);
-                    */
-                }
-                $('#response-message').html($('<span>').css('color', 'red').text(errMessage));
-            }).always(function () { // form-handling? .always return to nomral after finishing submiting
-                $('input[type="submit"]').prop('disabled', false);
-                $('body').css('curser', 'default');
-            });
+                $user_msg.text(response.message).css('color', response.success ? 'green' : 'red');
+            }, 'json')
+                .fail(function (xhr) {
+                    var errMessage = 'something went wrong. Please try again later';
+                    try {
+                        const json = JSON.parse(xhr.responseText);
+                        if (json.message) {
+                            errMessage = json.message;
+                        }
+                        $user_msg.html($('<span>').css('color', 'red').text(errMessage));
+                    } catch (e) { }
+                    $user_msg.text(errMessage).css('color', 'red');
+                }).always(function (response) {
+                    unlockForm();
+                    if (response.success) $form[0].reset();
+                });
         });
+
+        function lockForm() {
+            $form.find(':input:not([type="hidden"])').prop('disabled', true);
+            $('body').css('cursor', 'wait');
+        }
+
+        function unlockForm() {
+            $form.find(':input').prop('disabled', false);
+            $('body').css('cursor', 'default');
+        }
+
     });
 </script>

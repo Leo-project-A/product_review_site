@@ -11,7 +11,6 @@ function log_admin($admin_id)
     $_SESSION['admin_ip'] = $_SERVER['REMOTE_ADDR'];
     $_SESSION['admin_ua'] = $_SERVER['HTTP_USER_AGENT'];
     set_flash_message("info", "Admin Logged-in successfully");
-    redirect("admin.php");
 }
 
 function is_admin_logged_in(): bool
@@ -84,7 +83,10 @@ function generate_csrf_token(){
 }
 
 function get_csrf_token(): string {
-    return $_SESSION['csrf_token'] ?? generate_csrf_token();
+    if (!isset($_SESSION['csrf_token'])) {
+        generate_csrf_token();
+    }
+    return $_SESSION['csrf_token'];
 }
 
 function validate_csrf_token(){
@@ -97,13 +99,6 @@ function validate_csrf_token(){
 
 function csrf_check(){
     if (!validate_csrf_token()) {
-        http_response_code(403); // Forbidden
-        echo json_encode([
-            'success' => false,
-            'message' => 'Failed to validate CSRF token.',
-            'timestamp' => date('Y-m-d H:i:s'),
-            'ip' => $_SERVER['REMOTE_ADDR']
-        ]);
-        exit;
+        throw new DomainException('Failed to validate CSRF token.', 403);
     }
 }

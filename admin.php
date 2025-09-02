@@ -10,12 +10,9 @@ try {
     $sql = "SELECT * FROM reviews WHERE approved = 0";
     $stmt = $pdo->query($sql);
     $waiting_reviews = $stmt->fetchAll();
-} catch (Exception $e) { // change to Throwable? is it better? when/where.. just default throw(e) and thats it?
-    // log err
-    // echo $e;
-} catch (Error $e) { // find where to throw this. right now: db down - 0 reviews shown, site working just fine.
-    // log err
-    // echo $e;
+} catch (Throwable $e) {
+    log_error($e);
+    Database::$DBconnetion = false;
 }
 
 ?>
@@ -27,10 +24,12 @@ try {
 
     <div class="review-container">
 
-        <!-- AJAX response sent from admin_actions.php -->
+        
         <div id="response-message"></div>
 
-        <?php if (count($waiting_reviews) < 1): ?>
+        <?php if (!Database::$DBconnetion): ?>
+            <span> <?= "Connection to database failed. Please try again later :(" ?> </span>
+        <?php elseif (count($waiting_reviews) < 1): ?>
             <span> <?= "You have no pending reviews currently" ?> </span>
         <?php endif; ?>
 
@@ -65,6 +64,7 @@ include_once "partials/footer.php";
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script> // consider moving all the scripts to their own script file - you could make more helper functions in javascript
+    
     document.addEventListener("DOMContentLoaded", function () {
         /* 
         approve and decline basictly do the same thing. can i make the function f() 

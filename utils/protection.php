@@ -65,19 +65,15 @@ function check_rate_limit($action)
 
 /** Spam, Bot protections */
 
-function check_duplicate_review($username){
-    // ADD $ip to check for spamming from the same ip - diferent names
-    global $pdo;
-    $sql = "SELECT COUNT(*) FROM reviews WHERE username = ?";
-    try {
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([$username]);
-        return $stmt->fetchColumn() > 0;
-    } catch (PDOException $e) {
-        return false;
-    } catch (Error $e) {
-        return false;
-    }
+function has_review_by_user(string $username)
+{
+    global $pdo;                              
+
+    $sql  = 'SELECT 1 FROM reviews WHERE name = ? LIMIT 1';
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$username]);
+
+    return $stmt->fetchColumn() !== false; 
 }
 
 function check_form_timeout(){

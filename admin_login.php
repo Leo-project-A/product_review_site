@@ -1,74 +1,9 @@
 <?php
 require_once __DIR__ . "/partials/header.php";
 
-// REWORK entire form admin login - using AJAX aswell
-
 if (is_admin_logged_in()) {
     redirect("admin.php");
 }
-
-if ($_SERVER['REQUEST_METHOD'] === "POST") {
-    csrf_check();
-    check_rate_limit('login');
-
-    if (!empty($_POST['contact'])) { //probebly bot 
-        http_response_code(403);
-        echo json_encode([
-            'success' => false,
-            'message' => 'Form declined',
-        ]);
-        exit;
-    }
-
-    if (check_form_timeout()) {
-        http_response_code(403);
-        echo json_encode([
-            'success' => false,
-            'message' => 'Form timeout.'
-        ]);
-        exit;
-    }
-
-    $input_username = trim($_POST['input_username']);
-    $input_password = trim($_POST['input_password']);
-    if (
-        !validate_input_data('username', $input_username) ||
-        !validate_input_data('password', $input_password)
-    ) {
-        redirect("admin_login.php");
-        $_SESSION['err_msg'] = "Invalid username or password";
-        exit;
-    }
-
-    try {
-        $sql = "SELECT * FROM admins WHERE username = ? LIMIT 1";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([$input_username]);
-
-        if ($admin = $stmt->fetch()) { // found admin
-            $admin_password = $admin['password_hash'];
-            if (password_verify($input_password, $admin_password)) {
-                log_admin($admin['id']);
-            } else {
-                redirect("admin_login.php");
-                $_SESSION['err_msg'] = "Invalid username or password";
-            }
-        } else {
-            redirect("admin_login.php");
-            $_SESSION['err_msg'] = "Invalid username or password";
-        }
-        redirect("admin_login.php");
-    } catch (PDOException $e) {
-        redirect("admin_login.php");
-        set_flash_message('error', "something went wrong..");
-    } catch (Error $e) { // find where to throw this. right now: db down - 0 reviews shown, site working just fine.
-        redirect("admin_login.php");
-        set_flash_message('error', "something went wrong..");
-        // log err
-        // echo $e;
-    }
-}
-
 generate_csrf_token();
 ?>
 
@@ -77,28 +12,12 @@ generate_csrf_token();
     <h1 class="title">Welcome to Admin Login</h1>
     <h2 class="subtitle">Restricted Area: Authorized Personnel Only</h2>
 
+    <!-- AJAX response sent from submit_form.php -->
+    <div id="response-message"></div>
+
     <div class="form">
 
-        <?php if (isset($_SESSION['user_msg'])): ?>
-            <p style="color:green">
-                <?php
-                echo $_SESSION['user_msg'];
-                unset($_SESSION['user_msg']);
-                ?>
-            </p>
-        <?php endif; ?>
-
-        <?php if (isset($_SESSION['err_msg'])): ?>
-            <p style="color:red">
-                <?php
-                echo $_SESSION['err_msg'];
-                unset($_SESSION['err_msg']);
-                ?>
-            </p>
-        <?php endif; ?>
-
-        
-        <form id="review-form" method="POST" action="" class="form">
+        <form id="admin-form" method="POST" action="" class="form">
             <?= form_hidden_fields(); ?>
 
             <label for="input_username">Username</label>
@@ -119,3 +38,51 @@ generate_csrf_token();
 <?php
 include_once "partials/footer.php";
 ?>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const $form = $('#admin-form');
+        const $user_msg = $('#response-message');
+
+        $form.on('submit', function (e) {
+            e.preventDefault();
+            $user_msg.text('');
+            const formData = $form.serialize();
+            lockForm();
+
+            $.post("utils/admin_login_process.php", formData, function (response) {
+                $user_msg.text(response.message).css('color', response.success ? 'green' : 'red');
+                if (response.success) {
+                    window.location.href = response.redirect;
+                }
+            }, 'json')
+                .fail(function (xhr) {
+                    var errMessage = 'something went wrong. Please try again later';
+                    try {
+                        const json = JSON.parse(xhr.responseText);
+                        if (json.message) {
+                            errMessage = json.message;
+                        }
+                        $user_msg.html($('<span>').css('color', 'red').text(errMessage));
+                    } catch (e) { }
+                    $user_msg.text(errMessage).css('color', 'red');
+                }).always(function (response) {
+                    unlockForm();
+                    if (response.success) $form[0].reset();
+                });
+        });
+
+        function lockForm() {
+            $form.find(':input:not([type="hidden"])').prop('disabled', true);
+            $('body').css('cursor', 'wait');
+        }
+
+        function unlockForm() {
+            $form.find(':input').prop('disabled', false);
+            $('body').css('cursor', 'default');
+        }
+
+    });
+</script>

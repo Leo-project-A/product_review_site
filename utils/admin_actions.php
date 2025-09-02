@@ -2,20 +2,18 @@
 
 require_once __DIR__ . "/../config.php"; // for pdo
 require_once __DIR__ . "/functions.php"; // for tokens and validation
+require_once __DIR__ . "/protection.php";
 
 header("Content-Type: application/JSON");
 
 if ($_SERVER['REQUEST_METHOD'] === "POST") {
     /* REFRACTOR funcions - used many times */
     csrf_check();
+    // check_rate_limit('review_update');
 
     $review_id = $_POST['review_id'] ?? null;
     if (!validate_input_data('review_id', $review_id)) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Invalid review ID.',
-        ]);
-        exit;
+        throw new DomainException("Invalid review ID ($review_id)", 403);
     }
     $action = $_POST['action'] ?? '';
     $sql = "";
@@ -28,23 +26,19 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
         $sql = "DELETE FROM reviews WHERE id = ?";
         $user_msg = 'Review have been declined!';
     } else {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Iligal action by admin.',
-        ]);
-        exit;
+        throw new DomainException('Iligal action by admin.', 403);
     }
 
     try {
         $stmt = $pdo->prepare($sql);
         $stmt->execute([$review_id]);
-    } catch (e) {
-        http_response_code(500);
-        exit;
+        $results = $stmt->rowCount();
+    } catch (PDOException $e) {
+        throw $e;
     }
 
     http_response_code(200); // return to success block 
-    if ($stmt->rowCount() > 0) { // success to UPDATE table
+    if ($results > 0) { // success to UPDATE table
         echo json_encode([
             'success' => true,
             'message' => $user_msg,
@@ -54,13 +48,6 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
         ]);
         exit;
     } else {  // failed to UPDATE table
-        echo json_encode([
-            'success' => false,
-            'message' => 'something went wrong. Please try again later. admin_actions-59',
-            'id' => $review_id,
-            'timestamp' => date('Y-m-d H:i:s'),
-            'ip' => $_SERVER['REMOTE_ADDR']
-        ]);
-        exit;
+        throw new RuntimeException('something went wrong. Please try again later.', 500);
     }
 }
